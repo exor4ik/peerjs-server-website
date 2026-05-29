@@ -1,11 +1,28 @@
-const { PeerServer } = require('peer');
+const express = require('express');
+const { ExpressPeerServer } = require('peer');
 
-const port = parseInt(process.env.PORT) || 9000;
+const app = express();
+const port = process.env.PORT || 9000;
 
-const peerServer = PeerServer({
-  port,
+const server = app.listen(port, '0.0.0.0', () => {
+  console.log(`🚀 Server listening on port ${port}`);
+});
+
+const peerServer = ExpressPeerServer(server, {
   path: '/',
+  allow_discovery: true,
   proxied: true,
+});
+
+app.use('/peerjs', peerServer);
+
+// Health check для Render
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', service: 'egor-peerjs' });
+});
+
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
 });
 
 peerServer.on('connection', (client) => {
@@ -15,5 +32,3 @@ peerServer.on('connection', (client) => {
 peerServer.on('disconnect', (client) => {
   console.log(`🔌 Peer disconnected: ${client.getId()}`);
 });
-
-console.log(`🚀 PeerJS Server running on port ${port}`);
