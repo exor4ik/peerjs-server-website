@@ -23,3 +23,12 @@ const port = process.env.PORT || 10000;
 server.listen(port, '0.0.0.0', () => {
   console.log(`Listening on ${port}`);
 });
+
+app.use((req, res, next) => {
+  console.log(req.method, req.url);
+  next();
+});
+
+server.on('upgrade', (req) => {
+  console.log('UPGRADE:', req.url);
+});
